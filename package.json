@@ -1,0 +1,15 @@
+{
+  "name": "finanzas-personales",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicación de finanzas personales desktop",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {},
+  "engines": {
+    "node": "22.12.0",
+    "npm": ">=11"
+  }
+}
