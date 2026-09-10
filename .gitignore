@@ -17,3 +17,5 @@ coverage/
 
 *.log
 npm-debug.log*
+
+apps/backend/dist/
