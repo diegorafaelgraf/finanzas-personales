@@ -17,7 +17,7 @@ model AccountHolder {
 
 model FinancialAccountType {
   id                String             @id @default(uuid())
-  name              String
+  name              String             @unique
   financialAccounts FinancialAccount[]
 
   @@map("financial_account_type")
