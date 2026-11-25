@@ -76,4 +76,24 @@ describe('PrismaExceptionFilter', () => {
       }),
     );
   });
+
+  it('maps Prisma foreign key errors to HTTP 409', () => {
+    const error = new Prisma.PrismaClientKnownRequestError(
+      'Foreign key constraint failed',
+      {
+        code: 'P2003',
+        clientVersion: 'test',
+      },
+    );
+
+    filter.catch(error, createHost());
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'The record cannot be deleted because related records exist',
+      }),
+    );
+  });
 });

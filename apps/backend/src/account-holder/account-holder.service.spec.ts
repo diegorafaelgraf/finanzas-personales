@@ -7,15 +7,19 @@ import { Prisma } from '../generated/prisma/client';
 describe('AccountHolderService', () => {
   let service: AccountHolderService;
   const create = jest.fn();
+  const remove = jest.fn();
 
   beforeEach(async () => {
     create.mockReset();
+    remove.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AccountHolderService,
         {
           provide: PrismaService,
-          useValue: { accountHolder: { create, findMany: jest.fn() } },
+          useValue: {
+            accountHolder: { create, delete: remove, findMany: jest.fn() },
+          },
         },
       ],
     }).compile();
@@ -59,5 +63,13 @@ describe('AccountHolderService', () => {
     await expect(service.create({ name: 'Ada Lovelace' })).rejects.toBe(
       databaseError,
     );
+  });
+
+  it('deletes an account holder by id', async () => {
+    const accountHolder = { id: 'holder-id', name: 'Ada Lovelace' };
+    remove.mockResolvedValue(accountHolder);
+
+    await expect(service.remove('holder-id')).resolves.toEqual(accountHolder);
+    expect(remove).toHaveBeenCalledWith({ where: { id: 'holder-id' } });
   });
 });

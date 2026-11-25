@@ -52,6 +52,12 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     ) {
       statusCode = HttpStatus.NOT_FOUND;
       message = 'The requested record was not found';
+    } else if (
+      exception instanceof Prisma.PrismaClientKnownRequestError &&
+      exception.code === 'P2003'
+    ) {
+      statusCode = HttpStatus.CONFLICT;
+      message = 'The record cannot be deleted because related records exist';
     } else {
       this.logger.error(
         exception instanceof Error ? exception.stack : String(exception),

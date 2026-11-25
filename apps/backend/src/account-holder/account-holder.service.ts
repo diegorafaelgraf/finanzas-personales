@@ -20,4 +20,10 @@ export class AccountHolderService {
       data: { name: name.trim() },
     });
   }
+
+  async remove(id: string) {
+    return this.prisma.accountHolder.delete({
+      where: { id },
+    });
+  }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AccountHolderService } from './account-holder.service';
 import { CreateAccountHolderDto } from './dto/create-account-holder.dto';
 
@@ -14,5 +14,10 @@ export class AccountHolderController {
   @Post()
   create(@Body() createAccountHolderDto: CreateAccountHolderDto) {
     return this.accountHolderService.create(createAccountHolderDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.accountHolderService.remove(id);
   }
 }

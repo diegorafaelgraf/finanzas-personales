@@ -5,15 +5,17 @@ import { AccountHolderService } from './account-holder.service';
 describe('AccountHolderController', () => {
   let controller: AccountHolderController;
   const create = jest.fn();
+  const remove = jest.fn();
 
   beforeEach(async () => {
     create.mockReset();
+    remove.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AccountHolderController],
       providers: [
         {
           provide: AccountHolderService,
-          useValue: { create, findAll: jest.fn() },
+          useValue: { create, findAll: jest.fn(), remove },
         },
       ],
     }).compile();
@@ -32,5 +34,15 @@ describe('AccountHolderController', () => {
 
     await expect(controller.create(dto)).resolves.toEqual(accountHolder);
     expect(create).toHaveBeenCalledWith(dto);
+  });
+
+  it('delegates account holder deletion to the service', async () => {
+    const accountHolder = { id: 'holder-id', name: 'Ada Lovelace' };
+    remove.mockResolvedValue(accountHolder);
+
+    await expect(controller.remove('holder-id')).resolves.toEqual(
+      accountHolder,
+    );
+    expect(remove).toHaveBeenCalledWith('holder-id');
   });
 });
