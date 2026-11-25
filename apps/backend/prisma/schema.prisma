@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model AccountHolder {
+  id                String             @id @default(uuid())
+  name              String
+  financialAccounts FinancialAccount[]
+
+  @@map("account_holder")
+}
+
+model FinancialAccountType {
+  id                String             @id @default(uuid())
+  name              String
+  financialAccounts FinancialAccount[]
+
+  @@map("financial_account_type")
+}
+
+model CurrencyType {
+  id         String     @id @default(uuid())
+  name       String
+  currencies Currency[]
+
+  @@map("currency_type")
+}
+
+model Currency {
+  id                   String                  @id @default(uuid())
+  currencyTypeId       String
+  code                 String
+  name                 String
+  symbol               String
+  currencyType         CurrencyType            @relation(fields: [currencyTypeId], references: [id])
+  financialAccounts    FinancialAccount[]
+  dollarCurrencyQuotes DollarCurrencyQuote[]
+
+  @@unique([currencyTypeId, code])
+  @@map("currency")
+}
+
+model FinancialAccount {
+  id                     String              @id @default(uuid())
+  accountHolderId        String
+  financialAccountTypeId String
+  currencyId             String
+
+  accountHolder         AccountHolder        @relation(fields: [accountHolderId], references: [id])
+  financialAccountType  FinancialAccountType @relation(fields: [financialAccountTypeId], references: [id])
+  currency              Currency             @relation(fields: [currencyId], references: [id])
+  movements             Movement[]
+
+  @@map("financial_account")
+}
+
+model Movement {
+  id                 String           @id @default(uuid())
+  financialAccountId String
+  date               DateTime
+  amount             Float
+  description        String
+
+  financialAccount   FinancialAccount @relation(fields: [financialAccountId], references: [id])
+
+  @@index([financialAccountId, date])
+  @@map("movement")
+}
+
+model BlueDollarRate {
+  id        String   @id @default(uuid())
+  date      DateTime @unique
+  usdArsBuy Float
+
+  @@map("blue_dollar_rate")
+}
+
+model DollarCurrencyQuote {
+  id         String   @id @default(uuid())
+  currencyId String
+  date       DateTime
+  usdValue   Float
+
+  currency   Currency @relation(fields: [currencyId], references: [id])
+
+  @@unique([currencyId, date])
+  @@map("dollar_currency_quote")
+}
