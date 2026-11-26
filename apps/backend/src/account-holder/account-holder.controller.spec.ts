@@ -6,16 +6,18 @@ describe('AccountHolderController', () => {
   let controller: AccountHolderController;
   const create = jest.fn();
   const remove = jest.fn();
+  const findById = jest.fn();
 
   beforeEach(async () => {
     create.mockReset();
     remove.mockReset();
+    findById.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AccountHolderController],
       providers: [
         {
           provide: AccountHolderService,
-          useValue: { create, findAll: jest.fn(), remove },
+          useValue: { create, findAll: jest.fn(), findById, remove },
         },
       ],
     }).compile();
@@ -25,6 +27,16 @@ describe('AccountHolderController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('delegates account holder lookup by id to the service', async () => {
+    const accountHolder = { id: 'holder-id', name: 'Ada Lovelace' };
+    findById.mockResolvedValue(accountHolder);
+
+    await expect(controller.findById('holder-id')).resolves.toEqual(
+      accountHolder,
+    );
+    expect(findById).toHaveBeenCalledWith('holder-id');
   });
 
   it('delegates account holder creation to the service', async () => {

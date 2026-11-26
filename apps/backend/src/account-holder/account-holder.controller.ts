@@ -11,6 +11,11 @@ export class AccountHolderController {
     return this.accountHolderService.findAll();
   }
 
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.accountHolderService.findById(id);
+  }
+
   @Post()
   create(@Body() createAccountHolderDto: CreateAccountHolderDto) {
     return this.accountHolderService.create(createAccountHolderDto);

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAccountHolderDto } from './dto/create-account-holder.dto';
 
@@ -8,6 +12,18 @@ export class AccountHolderService {
 
   async findAll() {
     return this.prisma.accountHolder.findMany();
+  }
+
+  async findById(id: string) {
+    const accountHolder = await this.prisma.accountHolder.findUnique({
+      where: { id },
+    });
+
+    if (!accountHolder) {
+      throw new NotFoundException('Account holder not found');
+    }
+
+    return accountHolder;
   }
 
   async create(createAccountHolderDto: CreateAccountHolderDto) {

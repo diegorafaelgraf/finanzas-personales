@@ -1,24 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AccountHolderService } from './account-holder.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
 
 describe('AccountHolderService', () => {
   let service: AccountHolderService;
   const create = jest.fn();
   const remove = jest.fn();
+  const findUnique = jest.fn();
 
   beforeEach(async () => {
     create.mockReset();
     remove.mockReset();
+    findUnique.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AccountHolderService,
         {
           provide: PrismaService,
           useValue: {
-            accountHolder: { create, delete: remove, findMany: jest.fn() },
+            accountHolder: {
+              create,
+              delete: remove,
+              findMany: jest.fn(),
+              findUnique,
+            },
           },
         },
       ],
@@ -29,6 +36,22 @@ describe('AccountHolderService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('finds an account holder by id', async () => {
+    const accountHolder = { id: 'holder-id', name: 'Ada Lovelace' };
+    findUnique.mockResolvedValue(accountHolder);
+
+    await expect(service.findById('holder-id')).resolves.toEqual(accountHolder);
+    expect(findUnique).toHaveBeenCalledWith({ where: { id: 'holder-id' } });
+  });
+
+  it('throws when the account holder does not exist', async () => {
+    findUnique.mockResolvedValue(null);
+
+    await expect(service.findById('missing-id')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('creates an account holder with a trimmed name', async () => {
