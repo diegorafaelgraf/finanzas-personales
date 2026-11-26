@@ -5,9 +5,10 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AccountHolderModule } from './account-holder/account-holder.module';
 import { PrismaExceptionFilter } from './common/filters/prisma/exception.filter';
+import { FinancialAccountTypeModule } from './financial-account-type/financial-account-type.module';
 
 @Module({
-  imports: [PrismaModule, AccountHolderModule],
+  imports: [PrismaModule, AccountHolderModule, FinancialAccountTypeModule],
   controllers: [AppController],
   providers: [
     AppService,
