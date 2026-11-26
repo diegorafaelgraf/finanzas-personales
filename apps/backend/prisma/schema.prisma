@@ -59,17 +59,51 @@ model FinancialAccount {
   @@map("financial_account")
 }
 
+model MovementType {
+  id        String     @id @default(uuid())
+  code      String     @unique
+  name      String
+  movements Movement[]
+
+  @@map("movement_type")
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  expenses Expense[]
+
+  @@map("category")
+}
+
 model Movement {
-  id                 String           @id @default(uuid())
+  id                 String       @id @default(uuid())
   financialAccountId String
+  movementTypeId     String
+  operationId        String?
   date               DateTime
   amount             Float
-  description        String
 
-  financialAccount   FinancialAccount @relation(fields: [financialAccountId], references: [id])
+  financialAccount FinancialAccount @relation(fields: [financialAccountId], references: [id])
+  movementType     MovementType     @relation(fields: [movementTypeId], references: [id])
+  expense          Expense?
 
   @@index([financialAccountId, date])
+  @@index([operationId])
   @@map("movement")
+}
+
+model Expense {
+  id         String @id @default(uuid())
+  movementId String @unique
+  name       String
+  categoryId String
+
+  movement Movement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId])
+  @@map("expense")
 }
 
 model BlueDollarRate {
