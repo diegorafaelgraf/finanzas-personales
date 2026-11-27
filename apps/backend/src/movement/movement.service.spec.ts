@@ -9,6 +9,7 @@ describe('MovementService', () => {
   const findAccounts = jest.fn();
   const findMovementType = jest.fn();
   const createMovement = jest.fn();
+  const findFinancialAccountWithMovements = jest.fn();
   const transaction = {
     financialAccount: { findMany: findAccounts, findUnique: findAccount },
     movementType: { findUnique: findMovementType },
@@ -19,6 +20,7 @@ describe('MovementService', () => {
   beforeEach(async () => {
     findAccount.mockReset();
     findAccounts.mockReset();
+    findFinancialAccountWithMovements.mockReset();
     findMovementType.mockReset();
     createMovement.mockReset();
     prismaTransaction.mockReset();
@@ -29,12 +31,57 @@ describe('MovementService', () => {
         MovementService,
         {
           provide: PrismaService,
-          useValue: { $transaction: prismaTransaction },
+          useValue: {
+            $transaction: prismaTransaction,
+            financialAccount: {
+              findUnique: findFinancialAccountWithMovements,
+            },
+          },
         },
       ],
     }).compile();
 
     service = module.get<MovementService>(MovementService);
+  });
+
+  it('returns account movements newest first with type and expense category details', async () => {
+    const movements = [
+      {
+        id: 'movement-id',
+        amount: -120,
+        movementType: { code: 'EXPENSE' },
+        expense: { name: 'Groceries', category: { name: 'Food' } },
+      },
+    ];
+    findFinancialAccountWithMovements.mockResolvedValue({
+      id: 'account-id',
+      movements,
+    });
+
+    await expect(
+      service.findByFinancialAccountId('account-id'),
+    ).resolves.toEqual(movements);
+    expect(findFinancialAccountWithMovements).toHaveBeenCalledWith({
+      where: { id: 'account-id' },
+      select: {
+        id: true,
+        movements: {
+          include: {
+            movementType: true,
+            expense: { include: { category: true } },
+          },
+          orderBy: { date: 'desc' },
+        },
+      },
+    });
+  });
+
+  it('returns not found when the financial account does not exist', async () => {
+    findFinancialAccountWithMovements.mockResolvedValue(null);
+
+    await expect(
+      service.findByFinancialAccountId('unknown-account-id'),
+    ).rejects.toThrow('Financial account not found');
   });
 
   it.each([25, -25])(

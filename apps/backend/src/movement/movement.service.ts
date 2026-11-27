@@ -15,6 +15,29 @@ import { CreateTransferDto } from './dto/create-transfer.dto';
 export class MovementService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findByFinancialAccountId(financialAccountId: string) {
+    const id = this.validateId(financialAccountId, 'Financial account');
+    const financialAccount = await this.prisma.financialAccount.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        movements: {
+          include: {
+            movementType: true,
+            expense: { include: { category: true } },
+          },
+          orderBy: { date: 'desc' },
+        },
+      },
+    });
+
+    if (!financialAccount) {
+      throw new NotFoundException('Financial account not found');
+    }
+
+    return financialAccount.movements;
+  }
+
   async createAdjustment(dto: CreateAdjustmentDto) {
     const amount = this.validateAdjustmentAmount(dto?.amount);
     const date = this.validateDate(dto?.date);
