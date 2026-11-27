@@ -25,7 +25,7 @@ model FinancialAccountType {
 
 model CurrencyType {
   id         String     @id @default(uuid())
-  name       String
+  name       String     @unique
   currencies Currency[]
 
   @@map("currency_type")
