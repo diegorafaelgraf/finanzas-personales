@@ -50,6 +50,7 @@ model FinancialAccount {
   accountHolderId        String
   financialAccountTypeId String
   currencyId             String
+  isActive               Boolean             @default(true)
 
   accountHolder         AccountHolder        @relation(fields: [accountHolderId], references: [id])
   financialAccountType  FinancialAccountType @relation(fields: [financialAccountTypeId], references: [id])
